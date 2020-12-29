@@ -5,7 +5,7 @@ namespace RequirementsLab.Core.Entities
 {
     public class User : IdentityUser<int>, IEntity
     {
-        public decimal Level { get; set; }
+        public float Level { get; set; }
 
         public string Name { get; set; }
 
