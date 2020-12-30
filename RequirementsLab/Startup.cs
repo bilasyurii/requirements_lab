@@ -6,9 +6,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using RequirementsLab.Core.Abstractions;
 using Microsoft.OpenApi.Models;
 using RequirementsLab.Core.Entities;
 using RequirementsLab.DAL;
+using RequirementsLab.Services;
 
 namespace RequirementsLab
 {
@@ -23,6 +25,8 @@ namespace RequirementsLab
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddScoped<ILevelTestService, LevelTestService>();
+
             var connectionString = Configuration.GetConnectionString("DefaultConnection");
 
             services.AddDbContext<RequirementsLabContext>(options => options.UseSqlServer(connectionString));
@@ -87,7 +91,7 @@ namespace RequirementsLab
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Geolocation V1");
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "RequirementsLab V1");
             });
 
             app.UseRouting();
