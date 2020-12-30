@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.OpenApi.Models;
 using RequirementsLab.Core.Entities;
 using RequirementsLab.DAL;
 
@@ -49,6 +50,18 @@ namespace RequirementsLab
             {
                 configuration.RootPath = "ClientApp/build";
             });
+
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "RequirementsLab API", Version = "v1" });
+            });
+
+            services.AddCors(options => {
+                options.AddPolicy("AllowEverything", builder =>
+                    builder.AllowAnyOrigin()
+                           .AllowAnyMethod()
+                           .AllowAnyHeader());
+            });
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, RequirementsLabContext context)
@@ -63,11 +76,19 @@ namespace RequirementsLab
                 app.UseHsts();
             }
 
+            app.UseCors("AllowEverything");
+
             app.UseStatusCodePagesWithReExecute("/Error/{0}");
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseSpaStaticFiles();
+
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Geolocation V1");
+            });
 
             app.UseRouting();
 
