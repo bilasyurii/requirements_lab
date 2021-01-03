@@ -26,6 +26,7 @@ namespace RequirementsLab
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddScoped<ILevelTestService, LevelTestService>();
+            services.AddScoped<ITaskService, TaskService>();
 
             var connectionString = Configuration.GetConnectionString("DefaultConnection");
 
@@ -64,7 +65,8 @@ namespace RequirementsLab
                 options.AddPolicy("AllowEverything", builder =>
                     builder.AllowAnyOrigin()
                            .AllowAnyMethod()
-                           .AllowAnyHeader());
+                           .AllowAnyHeader()
+                           .WithOrigins("http://localhost:44368"));
             });
         }
 
@@ -99,19 +101,19 @@ namespace RequirementsLab
             app.UseAuthentication();
             app.UseAuthorization();
 
+            /*
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapDefaultControllerRoute();
             });
+            */
 
-            /*
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller}/{action=Index}/{id?}");
             });
-            */
 
             app.UseSpa(spa =>
             {
