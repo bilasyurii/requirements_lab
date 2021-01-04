@@ -16,12 +16,14 @@ namespace RequirementsLab.Controllers
         }
 
         [HttpGet]
+        [Route("Generate/")]
         public TestDTO Generate()
         {
             return levelTestService.Generate();
         }
 
         [HttpPut]
+        [Route("Check/")]
         public TestResultDTO Check([FromBody] TestAnswersDTO answers)
         {
             return levelTestService.Check(answers);
