@@ -65,6 +65,7 @@ namespace RequirementsLab.Services
                             {
                                 Id = question.Id,
                                 Text = question.Text,
+                                Difficulty = question.Difficulty,
                                 Variants = variants,
                             };
 

@@ -22,7 +22,7 @@ namespace RequirementsLab.Controllers
             return levelTestService.Generate();
         }
 
-        [HttpPut]
+        [HttpPost]
         [Route("Check/")]
         public TestResultDTO Check([FromBody] TestAnswersDTO answers)
         {

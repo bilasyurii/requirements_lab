@@ -1,4 +1,6 @@
-﻿export const TASK_LIST_BEGIN = 'TASK_LIST_BEGIN';
+﻿import { handleErrors } from "../utils/httpUtils";
+
+export const TASK_LIST_BEGIN = 'TASK_LIST_BEGIN';
 export const TASK_LIST_SUCCESS = 'TASK_LIST_SUCCESS';
 export const TASK_LIST_ERROR = 'TASK_LIST_ERROR';
 
@@ -31,14 +33,6 @@ export const taskListError = error => ({
   type: TASK_LIST_ERROR,
   payload: { error },
 });
-
-function handleErrors(response) {
-  if (!response.ok) {
-    throw Error(response.statusText);
-  }
-
-  return response;
-}
 
 export const taskListState = {
   taskList: [],

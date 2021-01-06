@@ -11,6 +11,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import { connect } from 'react-redux';
 import * as backend from '../../store/startingTest';
+import StartingTestResult from './StartingTestResult';
 
 const useStyles = makeStyles({
   root: {
@@ -50,7 +51,7 @@ const useStyles = makeStyles({
     },
     '&::-webkit-scrollbar-thumb': {
       backgroundColor: 'rgb(76, 79, 107)',
-    }
+    },
   },
   startTaskButton: {
     borderRadius: '20px',
@@ -67,8 +68,8 @@ const useStyles = makeStyles({
     padding: '10px',
   },
   radiobuttonMargin: {
-      marginTop: '10px',
-  }
+    marginTop: '10px',
+  },
 });
 
 const PurpleRadio = withStyles({
@@ -111,10 +112,10 @@ export function TestQuestionAndAnswers({ classes, testText, variants, answer, an
       >
         {variants.map((variant, index) => (
           <FormControlLabel
+            key={variant.id}
             value={variant.id + ''}
             control={<PurpleRadio />}
             label={variant.text}
-            //checked={variant.id + '' === value}
           />
         ))}
       </RadioGroup>
@@ -157,12 +158,33 @@ export class StartingTestComponents extends Component {
 
   onFinishClicked = () => {
     this.answers.push(this.currentAnswer);
-    this.props.dispatch(backend.nextQuestion());
-    console.log(this.answers);
+
+    const answers = this.answers.map((answer) => ({
+      questionId: answer.questionId,
+      variantId: parseInt(answer.answerId),
+    }));
+
+    const answersDTO = {
+      answers,
+    };
+
+    this.props.dispatch(backend.finishTest(answersDTO));
   }
 
   render() {
-    const { classes, questions, questionId } = this.props;
+    const { classes, questions, questionId, result } = this.props;
+
+    if (result !== null) {
+      const { level, levelName } = result;
+
+      return (
+        <StartingTestResult
+          classes={classes}
+          level={level}
+          levelName={levelName}
+        />
+      );
+    }
 
     const question = questions[questionId];
 
@@ -181,7 +203,7 @@ export class StartingTestComponents extends Component {
     }
 
     const answer = this.currentAnswer = {
-      questionId
+      questionId: question.id,
     };
 
     return (
@@ -222,7 +244,7 @@ export class StartingTestComponents extends Component {
   }
 }
 
-export function StartingTest({ dispatch, error, loading, questions, questionId }) {
+export function StartingTest({ dispatch, error, loading, questions, questionId, result }) {
   const classes = useStyles();
 
   return (
@@ -238,19 +260,21 @@ export function StartingTest({ dispatch, error, loading, questions, questionId }
       error={error}
       questions={questions}
       questionId={questionId}
+      result={result}
       classes={classes}
     />  
   );
 }
 
 const mapStateToProps = (state) => {
-  const { loading, error, questions, questionId } = state.startingTest;
+  const { loading, error, questions, questionId, result } = state.startingTest;
 
   return {
     loading,
     error,
     questions,
     questionId,
+    result,
   };
 };
 

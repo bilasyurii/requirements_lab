@@ -4,6 +4,7 @@ import Layout from './components/Layout';
 import Home from './components/Home';
 import TaskList from './components/taskList/taskList';
 import StartingTest from './components/startingTest/StartingTest';
+import StartingTestResult from './components/startingTest/StartingTestResult';
 import RequirementsTask from './components/requirementsTask/RequirementsTask';
 
 import './custom.css'
@@ -13,6 +14,7 @@ export default () => (
         <Route exact path='/' component={Home} />
         <Route path='/tasks' component={TaskList} />
         <Route path='/test' component={StartingTest} />
+        <Route path='/test-result' component={StartingTestResult} />
         <Route path='/requirements-task' component={RequirementsTask} />
     </Layout>
 );
