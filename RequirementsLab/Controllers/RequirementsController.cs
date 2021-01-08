@@ -16,9 +16,17 @@ namespace RequirementsLab.Controllers
         }
 
         [HttpGet]
+        [Route("GetTask/{id}")]
         public RequirementsTaskDTO GetTask([FromRoute] int id)
         {
             return requirementsService.GetTask(id);
+        }
+
+        [HttpPost]
+        [Route("Check")]
+        public RequirementsResultDTO GetTask([FromBody] RequirementsAnswersDTO answers)
+        {
+            return requirementsService.Check(answers);
         }
     }
 }

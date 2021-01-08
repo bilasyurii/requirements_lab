@@ -6,6 +6,8 @@ import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import { connect } from 'react-redux';
 import * as backend from '../../store/taskList';
+import * as requirementsBackend from '../../store/requirementsTask';
+import { useHistory } from 'react-router';
 
 const useStyles = makeStyles({
   root: {
@@ -64,7 +66,23 @@ const useStyles = makeStyles({
   },
 });
 
-export function TaskCard({taskCardType, taskCardText, classes}) {
+export function TaskCard({ taskId, taskCardType, taskCardText, classes, dispatch, history }) {
+  const openRequirementsTask = () => {
+    dispatch(backend.selectTask(taskId));
+
+    history.push('/requirements-task');
+
+    dispatch(requirementsBackend.requirementsTask(taskId));
+  };
+
+  const openPoorWordsTask = () => {
+    dispatch(backend.selectTask(taskId));
+
+    history.push('/poorwords-task');
+  };
+
+  const isRequirementsTask = (taskCardType === 'Видобування вимог');
+
   return (
     <div className={classes.cardItem}>
       <Typography className={classes.pos}>{taskCardType}</Typography>
@@ -75,7 +93,13 @@ export function TaskCard({taskCardType, taskCardText, classes}) {
             {taskCardText}
           </Typography>
 
-          <Button variant="contained" className={classes.startTaskButton}>Почати спробу</Button>
+          <Button
+            variant="contained"
+            className={classes.startTaskButton}
+            onClick={isRequirementsTask ? openRequirementsTask : openPoorWordsTask}
+          >
+            Почати спробу
+          </Button>
         </CardContent>
       </Card>
     </div>
@@ -88,7 +112,7 @@ export class TaskListComponent extends Component {
   }
 
   render() {
-    const { taskList, classes } = this.props;
+    const { taskList, classes, history, dispatch } = this.props;
 
     return (
       <div>
@@ -100,9 +124,12 @@ export class TaskListComponent extends Component {
               <TaskCard
                 key={task.id}
                 classes={classes}
+                dispatch={dispatch}
+                history={history}
                 taskCardType={task.taskType}
                 taskCardText={task.title}
-              />  
+                taskId={task.id}
+              />
             ))}
           </CardContent>
         </Card>
@@ -113,6 +140,7 @@ export class TaskListComponent extends Component {
 
 export function TaskList({ dispatch, error, loading, taskList }) {
   const classes = useStyles();
+  const history = useHistory();
 
   return (
     <TaskListComponent
@@ -121,6 +149,7 @@ export function TaskList({ dispatch, error, loading, taskList }) {
       loading={loading}
       error={error}
       classes={classes}
+      history={history}
     />  
   );
 }

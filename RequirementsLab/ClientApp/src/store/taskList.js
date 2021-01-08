@@ -3,6 +3,7 @@
 export const TASK_LIST_BEGIN = 'TASK_LIST_BEGIN';
 export const TASK_LIST_SUCCESS = 'TASK_LIST_SUCCESS';
 export const TASK_LIST_ERROR = 'TASK_LIST_ERROR';
+export const SELECT_TASK = 'SELECT_TASK';
 
 export function taskList() {
   return dispatch => {
@@ -34,7 +35,17 @@ export const taskListError = error => ({
   payload: { error },
 });
 
+export function selectTask(taskId) {
+  return dispatch => {
+    dispatch({
+      type: SELECT_TASK,
+      payload: { taskId },
+    });
+  };
+}
+
 export const taskListState = {
+  taskId: null,
   taskList: [],
   taskTypes: [],
   loading: false,
@@ -48,6 +59,7 @@ export const taskListReducer = (state = taskListState, action) => {
         ...state,
         loading: true,
         error: null,
+        taskId: null,
       };
 
     case TASK_LIST_SUCCESS:
@@ -65,6 +77,12 @@ export const taskListReducer = (state = taskListState, action) => {
         error: action.payload.error,
         taskList: [],
         taskTypes: [],
+      };
+
+    case SELECT_TASK:
+      return {
+        ...state,
+        taskId: action.payload.taskId,
       };
 
     default:

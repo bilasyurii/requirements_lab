@@ -27,6 +27,7 @@ namespace RequirementsLab
         {
             services.AddScoped<ILevelTestService, LevelTestService>();
             services.AddScoped<ITaskService, TaskService>();
+            services.AddScoped<IRequirementsService, RequirementsService>();
 
             var connectionString = Configuration.GetConnectionString("DefaultConnection");
 

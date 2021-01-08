@@ -123,6 +123,9 @@ const useStyles = makeStyles({
     alignItems: 'center',
     padding: '5px 15px',
   },
+  editingItem: {
+    backgroundColor: 'rgb(171, 177, 236)',
+  },
   requirementButton: {
     backgroundColor: 'rgb(76, 79, 107)',
     marginLeft: '10px',
@@ -155,19 +158,35 @@ const useStyles = makeStyles({
   },
 });
 
-function RequirementItem({ requirement, classes, dispatch }) {
+function RequirementItem({ requirement, isEditing, classes, dispatch }) {
   const deleteRequirement = () => {
     dispatch(backend.deleteRequirement(requirement.id));
   };
 
+  const cancelEditing = () => {
+    dispatch(backend.cancelEditing());
+  };
+
+  const editRequirement = () => {
+    dispatch(backend.editRequirement(requirement.id));
+  };
+
   return (
-    <div className={classes.requirementItem}>
+    <div 
+      className={composeStyles([
+        classes.requirementItem,
+        isEditing ? classes.editingItem : '',
+      ])}
+    >
       <div className={classes.requirementTitle}>
-        {requirement.text}
+        {requirement.requirementText}
       </div>
 
       <div className={classes.requirementButtons}>
-        <IconButton aria-label="edit" className={classes.requirementButton}>
+        <IconButton
+          onClick={isEditing ? cancelEditing : editRequirement}
+          aria-label="edit"
+          className={classes.requirementButton}>
           <EditIcon/>
         </IconButton>
         
@@ -183,26 +202,6 @@ function RequirementItem({ requirement, classes, dispatch }) {
   );
 }
 
-/*
-const requirementValidationSchema = Yup.object().shape({
-  requirementText: Yup.string()
-    .max(200, 'Надто довгий текст вимоги! Максимум - 200 символів.')
-    .required('Це поле обов\'язкове'),
-
-  keyword1: Yup.string()
-    .max(20, 'Надто довге ключове слово! Максимум - 20 символів.'),
-
-  keyword2: Yup.string()
-    .max(20, 'Надто довге ключове слово! Максимум - 20 символів.'),
-
-  priority: Yup.number()
-    .integer()
-    .min(1, 'Надто низький пріоритет! Мінімум - 1.')
-    .max(5, 'Надто високийй пріоритет! Максимум - 5.')
-    .required('Це поле обов\'язкове'),
-});
-*/
-
 export function ErrorMessage({style, message}) {
   return (
     <div>
@@ -215,8 +214,51 @@ export function ErrorMessage({style, message}) {
   );
 }
 
+function handleErrors(newValues) {
+  const requirementText = newValues.requirementText;
+
+  const errors = newValues.errors;
+
+  if (!requirementText) {
+    errors.requirementText = 'Це поле обов\'язкове.';
+  } else if (requirementText.length >= 200) {
+    errors.requirementText = 'Надто довгий текст вимоги! Максимум - 200 символів.';
+  }
+
+  const keywordErrorText = 'Надто довге ключове слово! Максимум - 20 символів.';
+
+  if (newValues.keyword1.length >= 20) {
+    errors.keyword1 = keywordErrorText;
+  }
+
+  if (newValues.keyword2.length >= 20) {
+    errors.keyword2 = keywordErrorText;
+  }
+
+  const priority = newValues.priority;
+
+  if (!priority) {
+    errors.priority = 'Це поле обов\'язкове.';
+  } else {
+    const parsed = parseInt(priority);
+
+    if (parsed + '' !== priority || priority.length !== 1) {
+      errors.priority = 'Введіть ціле число.';
+    } else {
+      if (parsed < 1) {
+        errors.priority = 'Надто низький пріоритет! Мінімум - 1.';
+      } else if (parsed > 5) {
+        errors.priority = 'Надто високий пріоритет! Максимум - 5.';
+      }
+    }
+  }
+}
+
+let previousEditing = false;
+let previousId = null;
+
 export function TaskPlayground(props) {
-  const { requirements, classes, dispatch } = props;
+  const { requirements, isEditing, editingRequirement, taskId, classes, dispatch } = props;
 
   const [values, setValues] = React.useState({
     requirementText: '',
@@ -228,6 +270,45 @@ export function TaskPlayground(props) {
     },
   });
 
+  let editingRequirementId = null;
+
+  if (isEditing) {
+    editingRequirementId = editingRequirement.id;
+  } else {
+    previousId = null;
+  }
+
+  const override = isEditing && !previousEditing;
+  const clear = !isEditing && previousEditing;
+
+  previousEditing = isEditing;
+
+  if (override || previousId !== editingRequirementId) {
+    values.requirementText = editingRequirement.requirementText;
+    values.keyword1 = editingRequirement.keyword1;
+    values.keyword2 = editingRequirement.keyword2;
+    values.priority = editingRequirement.priority + '';
+
+    values.errors = {
+      firstTime: true,
+    };
+
+    setValues(values);
+  } else if (clear) {
+    values.requirementText = '';
+    values.keyword1 = '';
+    values.keyword2 = '';
+    values.priority = '';
+
+    values.errors = {
+      firstTime: true,
+    };
+
+    setValues(values);
+  }
+
+  previousId = editingRequirementId;
+
   const handleChangeForm = name => event => {
     const errors = {};
 
@@ -237,46 +318,14 @@ export function TaskPlayground(props) {
       errors,
     };
 
-    const requirementText = newValues.requirementText;
-
-    if (!requirementText) {
-      errors.requirementText = 'Це поле обов\'язкове.';
-    } else if (requirementText.length >= 200) {
-      errors.requirementText = 'Надто довгий текст вимоги! Максимум - 200 символів.';
-    }
-
-    const keywordErrorText = 'Надто довге ключове слово! Максимум - 20 символів.';
-
-    if (newValues.keyword1.length >= 20) {
-      errors.keyword1 = keywordErrorText;
-    }
-
-    if (newValues.keyword2.length >= 20) {
-      errors.keyword2 = keywordErrorText;
-    }
-
-    const priority = newValues.priority;
-
-    if (!priority) {
-      errors.priority = 'Це поле обов\'язкове.';
-    } else {
-      const parsed = parseInt(priority);
-
-      if (parsed + '' !== priority || priority.length !== 1) {
-        errors.priority = 'Введіть ціле число.';
-      } else {
-        if (parsed < 1) {
-          errors.priority = 'Надто низький пріоритет! Мінімум - 1.';
-        } else if (parsed > 5) {
-          errors.priority = 'Надто високий пріоритет! Максимум - 5.';
-        }
-      }
-    }
+    handleErrors(newValues);
 
     setValues(newValues);
   };
 
   const addRequirement = () => {
+    handleErrors(values);
+
     const errors = values.errors;
 
     if (!(
@@ -287,15 +336,75 @@ export function TaskPlayground(props) {
       errors.priority
     )) {
       const requirement = {
-        text: values.requirementText,
+        requirementText: values.requirementText,
         keyword1: values.keyword1,
         keyword2: values.keyword2,
         priority: parseInt(values.priority),
       };
 
       dispatch(backend.addRequirement(requirement));
+    } else {
+      const newValues = {
+        ...values,
+      };
+
+      setValues(newValues);
     }
-  }
+  };
+
+  const updateRequirement = () => {
+    handleErrors(values);
+
+    const errors = values.errors;
+
+    if (!(
+      errors.requirementText ||
+      errors.keyword1 ||
+      errors.keyword2 ||
+      errors.priority
+    )) {
+      const requirement = {
+        id: editingRequirement.id,
+        requirementText: values.requirementText,
+        keyword1: values.keyword1,
+        keyword2: values.keyword2,
+        priority: parseInt(values.priority),
+      };
+
+      dispatch(backend.updateRequirement(requirement));
+    } else {
+      const newValues = {
+        ...values,
+      };
+
+      setValues(newValues);
+    }
+  };
+
+  const finishTask = () => {
+    const data = {
+      taskId,
+      requirements: requirements.map((requirement) => {
+        const keywords = [];
+
+        if (requirement.keyword1) {
+          keywords.push(requirement.keyword1);
+        }
+
+        if (requirement.keyword2) {
+          keywords.push(requirement.keyword2);
+        }
+
+        return {
+          description: requirement.requirementText,
+          priority: parseInt(requirement.priority),
+          keywords,
+        };
+      }),
+    };
+
+    dispatch(backend.finishTask(data));
+  };
 
   return (
     <form
@@ -319,6 +428,7 @@ export function TaskPlayground(props) {
                 fullWidth
                 multiline
                 rows={6}
+                value={values.requirementText}
                 variant="outlined"
                 name="requirementText"
                 type="text"
@@ -338,9 +448,9 @@ export function TaskPlayground(props) {
             <Button
               variant="contained"
               className={classes.mainButton}
-              onClick={addRequirement}
+              onClick={isEditing ? updateRequirement : addRequirement}
             >
-              Додати вимогу
+              {isEditing ? 'Змінити вимогу' : 'Додати вимогу'}
             </Button>
           </div>
 
@@ -358,6 +468,7 @@ export function TaskPlayground(props) {
                   classes.whiteTextField,
                   classes.keywordTextField,
                 ])}
+                value={values.keyword1}
                 fullWidth
                 variant="outlined"
                 name="keyword1"
@@ -381,6 +492,7 @@ export function TaskPlayground(props) {
                   classes.whiteTextField,
                   classes.keywordTextField,
                 ])}
+                value={values.keyword2}
                 fullWidth
                 variant="outlined"
                 name="keyword2"
@@ -403,6 +515,7 @@ export function TaskPlayground(props) {
 
               <TextField
                 className={classes.whiteTextField}
+                value={values.priority}
                 fullWidth
                 variant="outlined"
                 name="priority"
@@ -420,7 +533,13 @@ export function TaskPlayground(props) {
               }
             </div>
           
-            <Button variant="contained" className={classes.mainButton}>Завершити спробу</Button>
+            <Button
+              variant="contained"
+              className={classes.mainButton}
+              onClick={finishTask}
+            >
+              Завершити спробу
+            </Button>
           </div>
         </div>
 
@@ -434,6 +553,7 @@ export function TaskPlayground(props) {
               <RequirementItem
                 key={requirement.id}
                 requirement={requirement}
+                isEditing={editingRequirementId === requirement.id}
                 classes={classes}
                 dispatch={dispatch}
               />
@@ -451,7 +571,15 @@ export class RequirementsTaskComponents extends Component {
   }
 
   render() {
-    const { classes, taskText, requirements, dispatch } = this.props;
+    const {
+      classes,
+      taskId,
+      taskText,
+      requirements,
+      isEditing,
+      editingRequirement,
+      dispatch,
+    } = this.props;
 
     return (
       <div>
@@ -471,6 +599,9 @@ export class RequirementsTaskComponents extends Component {
               classes={classes}
               dispatch={dispatch}
               requirements={requirements}
+              taskId={taskId}
+              isEditing={isEditing}
+              editingRequirement={editingRequirement}
             />
           </CardContent>
         </Card>
@@ -479,24 +610,53 @@ export class RequirementsTaskComponents extends Component {
   }
 }
 
-export function RequirementsTask({ dispatch, requirements }) {
+export function RequirementsTask(props) {
+  const {
+    requirements,
+    isEditing,
+    editingRequirement,
+    dispatch,
+    taskId,
+    taskText,
+    loading,
+    error,
+  } = props;
   const classes = useStyles();
 
   return (
     <RequirementsTaskComponents
       dispatch={dispatch}
-      taskText={'Програмне забезпечення має надавати можливість записуватися на прийом до лікаря пацієнту. Лікар може прийняти або відхилити бронювання. Пацієнт має можливість обрати сімейного лікаря.'}
+      taskId={taskId}
+      error={error}
+      loading={loading}
+      taskText={taskText}
       requirements={requirements}
+      isEditing={isEditing}
+      editingRequirement={editingRequirement}
       classes={classes}
     />  
   );
 }
 
 const mapStateToProps = (state) => {
-  const { requirements } = state.requirementsTask;
+  const {
+    requirements,
+    isEditing,
+    editingRequirement,
+    taskId,
+    taskText,
+    loading,
+    error,
+  } = state.requirementsTask;
 
   return {
     requirements,
+    isEditing,
+    editingRequirement,
+    taskId,
+    taskText,
+    loading,
+    error,
   };
 };
 
