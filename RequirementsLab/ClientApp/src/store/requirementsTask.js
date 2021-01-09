@@ -33,7 +33,6 @@ export function finishTask(answers) {
   return dispatch => {
     dispatch(finishTaskBegin());
 
-    console.log(answers);
     const json = JSON.stringify(answers);
 
     return postData('/Requirements/Check/', json)

@@ -3,9 +3,8 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
-import { connect } from 'react-redux';
 import composeStyles from "../../utils/composeStyles";
-import { Link, Button } from "@material-ui/core";
+import { Button } from "@material-ui/core";
 import { useHistory } from "react-router";
 
 const useStyles = makeStyles({
@@ -13,6 +12,7 @@ const useStyles = makeStyles({
     minWidth: 275,
     borderRadius: '20px',
     backgroundColor: 'rgb(196, 196, 196)',
+    padding: '20px',
   },
   pos: {
     color: 'rgb(68, 68, 68)',
@@ -20,10 +20,9 @@ const useStyles = makeStyles({
   middleText: {
     textAlign: 'center',
   },
-  levelText: {
-    margin: '20px 0',
-  },
   taskListContent: {
+    backgroundColor: 'white',
+    borderRadius: '20px',
   },
   tasksButton: {
     borderRadius: '20px',
@@ -44,34 +43,43 @@ export class StartingTestResultComponent extends Component {
   }
 
   render() {
-    const { classes, level, levelName } = this.props;
+    const { classes, level, levelName, time, title } = this.props;
 
     return (
       <div>
         <Typography className={classes.pos}>Результат тесту</Typography>
 
         <Card className={classes.root}>
-          <CardContent className={classes.taskListContent}>
-            <Typography className={composeStyles([
-              classes.pos,
-              classes.middleText,
-            ])}>
-              Тест пройдено. Ваш результат:
-            </Typography>
+          <Typography className={classes.pos}>
+            {title}
+          </Typography>
 
-            <Typography variant="h3" className={composeStyles([
+          <CardContent className={classes.taskListContent}>
+            <Typography variant="h5" className={composeStyles([
               classes.pos,
               classes.middleText,
               classes.levelText,
             ])}>
-              {level}%
+              Ваш результат - {level}%
+              {
+                levelName ?
+
+                (<>
+                  <br />
+                  {levelName}
+                </>) : 
+
+                null
+              }
             </Typography>
 
-            <Typography variant="h4" className={composeStyles([
+            <Typography className={composeStyles([
               classes.pos,
               classes.middleText,
             ])}>
-              {levelName}
+              Час, витрачений на виконання
+              <br />
+              завдання - {time}
             </Typography>
 
             <Button
@@ -88,7 +96,7 @@ export class StartingTestResultComponent extends Component {
   }
 }
 
-export default function StartingTestResult({ level, levelName }) {
+export default function StartingTestResult({ level, levelName, time, title }) {
   const classes = useStyles();
   const history = useHistory();
 
@@ -98,6 +106,8 @@ export default function StartingTestResult({ level, levelName }) {
       level={level}
       levelName={levelName}
       history={history}
+      time={time}
+      title={title}
     />
   );
 }

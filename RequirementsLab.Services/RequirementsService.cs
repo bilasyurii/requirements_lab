@@ -48,6 +48,7 @@ namespace RequirementsLab.Services
                 return new RequirementsResultDTO
                 {
                     Grade = 0,
+                    Title = task.Title,
                 };
             }
 
@@ -162,6 +163,7 @@ namespace RequirementsLab.Services
             return new RequirementsResultDTO
             {
                 Grade = (int)grade,
+                Title = task.Title,
             };
         }
 

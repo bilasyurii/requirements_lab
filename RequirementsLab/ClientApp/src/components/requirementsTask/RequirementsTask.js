@@ -12,6 +12,8 @@ import EditIcon from '@material-ui/icons/Edit';
 import DeleteOutlineIcon from '@material-ui/icons/DeleteOutline';
 import { IconButton } from '@material-ui/core';
 import { AppTheme } from '../../utils/colors';
+import { useHistory } from 'react-router';
+import Result from '../result/Result';
 
 const useStyles = makeStyles({
   root: {
@@ -258,7 +260,7 @@ let previousEditing = false;
 let previousId = null;
 
 export function TaskPlayground(props) {
-  const { requirements, isEditing, editingRequirement, taskId, classes, dispatch } = props;
+  const { requirements, isEditing, editingRequirement, taskId, finishCallback, classes, dispatch } = props;
 
   const [values, setValues] = React.useState({
     requirementText: '',
@@ -402,6 +404,8 @@ export function TaskPlayground(props) {
         };
       }),
     };
+
+    finishCallback();
 
     dispatch(backend.finishTask(data));
   };
@@ -566,8 +570,29 @@ export function TaskPlayground(props) {
 }
 
 export class RequirementsTaskComponents extends Component {
+  constructor(props) {
+    super(props);
+
+    this.taskStartTime = null;
+    this.taskDuration = null;
+  }
+
   componentDidMount() {
-    this.props.dispatch(backend.clearRequirements());
+    const { dispatch, history, taskId } = this.props;
+
+    if (taskId === null) {
+      history.push('/tasks');
+    } else {
+      this.taskStartTime = Date.now();
+
+      dispatch(backend.clearRequirements());
+    }
+  }
+
+  onFinished = () => {
+    const currentTime = Date.now();
+
+    this.taskDuration = currentTime - this.taskStartTime;
   }
 
   render() {
@@ -579,7 +604,29 @@ export class RequirementsTaskComponents extends Component {
       isEditing,
       editingRequirement,
       dispatch,
+      result,
     } = this.props;
+
+    if (result !== null) {
+      const { grade, title } = result;
+
+      const ms = this.taskDuration;
+      const seconds = ~~(ms / 1000);
+      const minutes = ~~(seconds / 60);
+      const secondsRemainder = seconds - minutes * 60;
+
+      const time = `${minutes.toString().padStart(2, '0')}:${secondsRemainder.toString().padStart(2, '0')}`;
+
+      return (
+        <Result
+          classes={classes}
+          level={grade}
+          levelName={null}
+          time={time}
+          title={title}
+        />
+      );
+    }
 
     return (
       <div>
@@ -602,6 +649,7 @@ export class RequirementsTaskComponents extends Component {
               taskId={taskId}
               isEditing={isEditing}
               editingRequirement={editingRequirement}
+              finishCallback={this.onFinished}
             />
           </CardContent>
         </Card>
@@ -620,8 +668,11 @@ export function RequirementsTask(props) {
     taskText,
     loading,
     error,
+    result,
   } = props;
+
   const classes = useStyles();
+  const history = useHistory();
 
   return (
     <RequirementsTaskComponents
@@ -634,6 +685,8 @@ export function RequirementsTask(props) {
       isEditing={isEditing}
       editingRequirement={editingRequirement}
       classes={classes}
+      history={history}
+      result={result}
     />  
   );
 }
@@ -643,11 +696,15 @@ const mapStateToProps = (state) => {
     requirements,
     isEditing,
     editingRequirement,
-    taskId,
     taskText,
     loading,
     error,
+    result,
   } = state.requirementsTask;
+
+  const {
+    taskId,
+  } = state.taskList;
 
   return {
     requirements,
@@ -657,6 +714,7 @@ const mapStateToProps = (state) => {
     taskText,
     loading,
     error,
+    result,
   };
 };
 
