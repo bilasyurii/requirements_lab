@@ -11,6 +11,9 @@ export const REGISTER_SUCCESS = 'REGISTER_SUCCESS';
 export const REGISTER_ERROR = 'REGISTER_ERROR';
 export const OPEN_LOGIN = 'OPEN_LOGIN';
 export const OPEN_REGISTER = 'OPEN_REGISTER';
+export const CHECK_AUTHORIZATION_BEGIN = 'CHECK_AUTHORIZATION_BEGIN';
+export const CHECK_AUTHORIZATION_SUCCESS = 'CHECK_AUTHORIZATION_SUCCESS';
+export const CHECK_AUTHORIZATION_ERROR = 'CHECK_AUTHORIZATION_ERROR';
 
 export function login(data) {
   return dispatch => {
@@ -121,7 +124,38 @@ export const registerError = error => ({
   payload: { error },
 });
 
+export function checkAuthorization() {
+  return dispatch => {
+    dispatch(checkAuthorizationBegin());
+
+    return fetch('/Account/Me/')
+      .then(handleErrors)
+      .then(res => res.json())
+      .then(data => {
+        dispatch(checkAuthorizationSuccess(data));
+
+        return data;
+      })
+      .catch(error => dispatch(checkAuthorizationError(error)));
+  };
+}
+
+export const checkAuthorizationBegin = () => ({
+  type: CHECK_AUTHORIZATION_BEGIN,
+});
+
+export const checkAuthorizationSuccess = data => ({
+  type: CHECK_AUTHORIZATION_SUCCESS,
+  payload: data,
+});
+
+export const checkAuthorizationError = error => ({
+  type: CHECK_AUTHORIZATION_ERROR,
+  payload: { error },
+});
+
 export const authorizationState = {
+  checked: false,
   loggedIn: false,
   userId: null,
   error: null,
@@ -133,6 +167,8 @@ export const authorizationReducer = (state = authorizationState, action) => {
   switch (action.type) {
     case REGISTER_BEGIN:
     case LOGIN_BEGIN:
+    case LOGOUT_BEGIN:
+    case CHECK_AUTHORIZATION_BEGIN:
       return {
         ...state,
         loading: true,
@@ -150,17 +186,12 @@ export const authorizationReducer = (state = authorizationState, action) => {
 
     case REGISTER_ERROR:
     case LOGIN_ERROR:
+    case LOGOUT_ERROR:
+    case CHECK_AUTHORIZATION_ERROR:
       return {
         ...state,
         loading: false,
         error: action.payload.error,
-      };
-
-    case LOGOUT_BEGIN:
-      return {
-        ...state,
-        loading: true,
-        error: null,
       };
 
     case LOGOUT_SUCCESS:
@@ -169,13 +200,6 @@ export const authorizationReducer = (state = authorizationState, action) => {
         loading: false,
         loggedIn: false,
         userId: null,
-      };
-
-    case LOGOUT_ERROR:
-      return {
-        ...state,
-        loading: false,
-        error: action.payload.error,
       };
 
     case OPEN_LOGIN:
@@ -188,6 +212,17 @@ export const authorizationReducer = (state = authorizationState, action) => {
       return {
         ...state,
         isRegistering: true,
+      };
+
+    case CHECK_AUTHORIZATION_SUCCESS:
+      const userId = action.payload;
+      const loggedIn = (userId !== -1);
+
+      return {
+        ...state,
+        checked: true,
+        loggedIn,
+        userId: loggedIn ? userId : null,
       };
 
     default:

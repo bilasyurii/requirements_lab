@@ -1,9 +1,8 @@
-﻿import React, { Component } from "react";
+﻿import React from "react";
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
-import composeStyles from "../../utils/composeStyles";
 import { Button } from "@material-ui/core";
 import { useHistory } from "react-router";
 import { connect } from 'react-redux';
