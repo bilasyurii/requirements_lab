@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using RequirementsLab.Core.Abstractions;
 using RequirementsLab.Core.DTO.Requirements;
+using RequirementsLab.Core.Entities;
 
 namespace RequirementsLab.Controllers
 {
@@ -9,10 +11,16 @@ namespace RequirementsLab.Controllers
     public class RequirementsController : ControllerBase
     {
         private readonly IRequirementsService requirementsService;
+        private readonly IResultsService resultsService;
+        private readonly UserManager<User> userManager;
+        private readonly SignInManager<User> signInManager;
 
-        public RequirementsController(IRequirementsService requirementsService)
+        public RequirementsController(IRequirementsService requirementsService, IResultsService resultsService, UserManager<User> userManager, SignInManager<User> signInManager)
         {
             this.requirementsService = requirementsService;
+            this.resultsService = resultsService;
+            this.userManager = userManager;
+            this.signInManager = signInManager;
         }
 
         [HttpGet]
@@ -26,7 +34,18 @@ namespace RequirementsLab.Controllers
         [Route("Check")]
         public RequirementsResultDTO GetTask([FromBody] RequirementsAnswersDTO answers)
         {
-            return requirementsService.Check(answers);
+            var result = requirementsService.Check(answers);
+
+            resultsService.StoreResult(answers.TaskId, result.Grade, Me());
+
+            return result;
+        }
+
+        private int Me()
+        {
+            var idStr = userManager.GetUserId(HttpContext.User);
+
+            return int.TryParse(idStr, out var id) ? id : -1;
         }
     }
 }

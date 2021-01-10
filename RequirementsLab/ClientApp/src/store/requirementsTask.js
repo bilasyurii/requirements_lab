@@ -221,6 +221,7 @@ export const requirementsTaskReducer = (state = requirementsTaskState, action) =
       return {
         ...state,
         requirements: [],
+        result: null,
         currentId: 0,
       };
 
