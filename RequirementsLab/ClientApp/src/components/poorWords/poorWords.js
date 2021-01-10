@@ -128,61 +128,26 @@ const useComponentVisible = (initialIsVisible) => {
 
   return { ref, isComponentVisible, setIsComponentVisible };
 };
-export class RequirementsComponent extends Component {
-  state = {
-    requirements: null
-  }
 
-  constructor(props) {
-    super(props);
-  }
+export const RequirementsComponent = ({ classes, requirements, viewWords }) => {
 
-  componentDidMount() {
-    // запит
-    let responseRequirements = [
-      {
-        id: 1,
-        text: "asd asd asd red"
-      },
-      {
-        id: 2,
-        text: "asd asd asd green"
-      },
-      {
-        id: 3,
-        text: "asd yellow, asd green hbjasf qwf asgqgw round oikasgjoas big orange"
-      }
-    ];
+  const onRequirementClicked = (words) => {
+    viewWords(words);
+  };
 
-    responseRequirements = responseRequirements.map(req => {
-      req.words = req.text.split(/[ ,.-:;]/).filter(word => word.length);
-      return req;
-    });
-
-    this.setState({requirements: responseRequirements});
-  }
-
-  onRequirementClicked = (words) => {
-    this.props.viewWords(words);
-  }
-
-  render() {
-    const { classes } = this.props;
-
-    return (
-      <div>
-        {this.state.requirements?.map((req, i) => 
-          <Card className={classes.requirement} key={i} onClick={() => { this.onRequirementClicked(req.words) }}>
-            <CardContent className={classes.taskListContent}>
-              <Typography >
-                { req.text }
-              </Typography>
-            </CardContent>
-          </Card>
-        )}
-      </div>
-    );
-  }
+  return (
+    <div>
+    {requirements?.map((req, i) => 
+      <Card className={classes.requirement} key={i} onClick={() => { onRequirementClicked(req.words) }}>
+        <CardContent className={classes.taskListContent}>
+          <Typography >
+            { req.title }
+          </Typography>
+        </CardContent>
+      </Card>
+    )}
+  </div>
+  );
 }
 
 export const PoorWord = ({classes, word, onClick, color}) => {
@@ -261,6 +226,22 @@ export const Popup = ({poorWords, pwClicked, addOrRemovePw, popupCoords,classes}
 export const PoorWords = () => {
   const [activeRequirement, setActiveRequirement] = useState();
   const [selectedPoorWords, setSelectedPoorWords] = useState([]);
+  const [requirements, setRequirements] = useState();
+
+  useEffect(() => {
+    (async () => {
+      const response = await fetch('PoorWords/GetRequirementsForPWTask');
+      const data = await response.json();
+  
+      const responseRequirements = data.requirements.map(req => {
+        req.words = req.title.match(/[^ ,.!?:;"']\S+[^ ,.!?:;"'](?!:)*/g);
+        return req;
+      });
+  
+      setRequirements(responseRequirements);
+    })()
+  }, []);
+
   const classes = useStyles();
 
   const viewWords = (text) => {
@@ -277,8 +258,19 @@ export const PoorWords = () => {
     }
   };
 
-  const sendPoorWords = () => {
-    console.log(selectedPoorWords)
+  const sendPoorWords = async () => {
+    await fetch('PoorWords/Check',{
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        requirementIDs: requirements.map(requirement => {
+          return requirement.id;
+        }), 
+        poorWords: selectedPoorWords
+      }),
+    })
   }
 
   return (
@@ -296,6 +288,7 @@ export const PoorWords = () => {
                   <RequirementsComponent
                     classes={classes}
                     viewWords={viewWords}
+                    requirements={requirements}
                   />
                 </CardContent>
               </Card>
