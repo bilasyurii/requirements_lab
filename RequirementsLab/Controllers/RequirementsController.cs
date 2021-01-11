@@ -13,14 +13,12 @@ namespace RequirementsLab.Controllers
         private readonly IRequirementsService requirementsService;
         private readonly IResultsService resultsService;
         private readonly UserManager<User> userManager;
-        private readonly SignInManager<User> signInManager;
 
-        public RequirementsController(IRequirementsService requirementsService, IResultsService resultsService, UserManager<User> userManager, SignInManager<User> signInManager)
+        public RequirementsController(IRequirementsService requirementsService, IResultsService resultsService, UserManager<User> userManager)
         {
             this.requirementsService = requirementsService;
             this.resultsService = resultsService;
             this.userManager = userManager;
-            this.signInManager = signInManager;
         }
 
         [HttpGet]

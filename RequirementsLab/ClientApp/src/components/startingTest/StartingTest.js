@@ -11,6 +11,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import { connect } from 'react-redux';
 import * as backend from '../../store/startingTest';
+import * as authorizationBackend from '../../store/authorization';
 import Result from '../result/Result';
 
 const useStyles = makeStyles({
@@ -176,6 +177,7 @@ export class StartingTestComponents extends Component {
     };
 
     this.props.dispatch(backend.finishTest(answersDTO));
+    this.props.dispatch(authorizationBackend.markTestFinished());
   }
 
   render() {

@@ -6,6 +6,6 @@ namespace RequirementsLab.Core.Abstractions
     {
         TestDTO Generate();
 
-        TestResultDTO Check(TestAnswersDTO answers);
+        TestResultDTO Check(TestAnswersDTO answers, int userId);
     }
 }

@@ -29,6 +29,7 @@ namespace RequirementsLab
             services.AddScoped<ITaskService, TaskService>();
             services.AddScoped<IRequirementsService, RequirementsService>();
             services.AddScoped<IResultsService, ResultsService>();
+            services.AddScoped<IAccountService, AccountService>();
 
             var connectionString = Configuration.GetConnectionString("DefaultConnection");
 

@@ -81,7 +81,7 @@ namespace RequirementsLab.Services
             };
         }
 
-        public TestResultDTO Check(TestAnswersDTO answersDTO)
+        public TestResultDTO Check(TestAnswersDTO answersDTO, int userId)
         {
             var answers = answersDTO.Answers;
             var fullDifficulty = 0;
@@ -120,6 +120,10 @@ namespace RequirementsLab.Services
             {
                 levelName = "Любитель";
             }
+
+            var user = context.Users.Find(userId).Level = level;
+
+            context.SaveChanges();
 
             return new TestResultDTO
             {
