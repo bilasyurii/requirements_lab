@@ -6,6 +6,6 @@ namespace RequirementsLab.Core.DTO.PoorWords
     {
         public List<string> poorWords { get; set; }
 
-        public List<int> requirementIDs { get; set; }
+        public int taskId { get; set; }
     }
 }

@@ -21,8 +21,13 @@ namespace RequirementsLab.Services
 
         public PoorWordsResultDTO CheckPoorWords(PoorWordsRequestDTO poorWords)
         {
-            var requirementIDs = poorWords.requirementIDs;
+            var taskId = poorWords.taskId;
             var pwArray = poorWords.poorWords;
+
+            var requirementIDs = context.RequirementsForPWTask
+                .Where(req => req.TaskId == taskId)
+                .Select(req => req.Id)
+                .ToList();
 
             var poorWordsFromDB = context.PoorWords
                 .Where(pw => requirementIDs.Contains(pw.RequirementId)) 
@@ -49,28 +54,17 @@ namespace RequirementsLab.Services
             string resultTitle;
             if (grade < 33)
             {
-                resultTitle = "bad result";
+                resultTitle = "Незадовільний результат";
             }
-            else if(grade>=33 && grade< 66)
+            else if(grade>=50 && grade< 85)
             {
-                resultTitle = "normal result";
+                resultTitle = "Добрий результат";
             }
             else
             {
-                resultTitle = "excellent result";
+                resultTitle = "Відмінний результат";
             }
-            /*
-            var tasks = context.Tasks
-                .Include(task => task.TaskType)
-                .Select(task => new TaskDTO
-                {
-                    Id = task.Id,
-                    Title = task.Title,
-                    Difficulty = task.Difficulty,
-                    TaskType = task.TaskType.Name,
-                })
-                .ToList();
-            */
+
             return new PoorWordsResultDTO
             {
                 Grade = grade,
@@ -79,9 +73,10 @@ namespace RequirementsLab.Services
             };
         }
 
-        public RequirementsForPWTaskDTO GetRequirements()
+        public RequirementsForPWTaskDTO GetRequirements(int taskId)
         {
             var tasks = context.RequirementsForPWTask
+               .Where(requirement => requirement.TaskId == taskId)
                .Select(requirement => new RequirementForPWTaskDTO
                {
                    Id = requirement.Id,

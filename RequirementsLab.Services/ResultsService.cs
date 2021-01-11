@@ -1,9 +1,12 @@
-﻿using RequirementsLab.Core.Abstractions;
+﻿using Microsoft.EntityFrameworkCore;
+using RequirementsLab.Core.Abstractions;
 using RequirementsLab.Core.Entities;
 using RequirementsLab.DAL;
 using System.Linq;
 using System;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
+
 
 namespace RequirementsLab.Services
 {
@@ -60,6 +63,71 @@ namespace RequirementsLab.Services
             context.TaskResultRecords.Add(record);
 
             context.SaveChanges();
+        }
+        public dynamic GetResults(int userId)
+        {
+            var userTasksGrouped = context.TaskResultRecords
+            .Where(res => res.UserId == userId)
+            .Include(taskRes => taskRes.Task)
+                .ThenInclude(res => res.TaskType)
+            .AsEnumerable()
+            .GroupBy(res => res.TaskId)
+            .ToList()
+            .Select(g => new
+            {
+                TaskId = g.Key,
+                TaskTypeId = g.First().Task.TaskTypeId,
+                TaskTypeName = g.First().Task.TaskType.Name,
+                Count = g.Count(),
+                MaxGrade = g.Max(item => item.Grade),
+                AvgGrade = g.Average(item => item.Grade)
+            })
+            .ToList();
+
+            var userTasks = context.TaskResultRecords
+            .Include(res => res.Task)
+            .Where(res => res.UserId == userId)
+            .Select(task => new {
+                TaskTitle = task.Task.Title,
+                TimeStamp = task.Time,
+                Grade = task.Grade,
+            })
+            .ToList();
+
+            var tasksInDb = context.Tasks
+            .Select(task => new {
+                TaskTitle = task.Title
+            })
+            .ToList();
+
+            var overallGrade = 0;
+            var finishedTasksCount = userTasksGrouped.Count;
+            var overallTasksCount = tasksInDb.Count;
+
+            userTasksGrouped.ForEach(userTask => 
+            {
+                overallGrade += userTask.MaxGrade;
+            });
+
+            overallGrade /= overallTasksCount;
+
+            var finalUserTasksGrouped = userTasksGrouped
+            .GroupBy(
+                res => res.TaskTypeId,
+                (key, g) => new
+                {
+                    TaskTypeId = key,
+                    TaskTypeName = g.First().TaskTypeName,
+                    GroupedTasks = g.ToList(),
+                }
+            );
+
+            return new {
+                OverallGrade = overallGrade,
+                GroupedUserTasks = finalUserTasksGrouped,
+                AllUserTasksResults = userTasks,
+            };
+
         }
     }
 }

@@ -1,12 +1,13 @@
-import React, { Component, useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import { connect } from 'react-redux';
-import * as backend from '../../store/startingTest';
 import { Icon, IconButton } from '@material-ui/core';
+import Result from '../result/Result';
+import { useHistory } from 'react-router';
 
 const useStyles = makeStyles({
   root: {
@@ -223,26 +224,39 @@ export const Popup = ({poorWords, pwClicked, addOrRemovePw, popupCoords,classes}
     </div>
   )
 }
-export const PoorWords = () => {
+export const PoorWords = ({taskId}) => {
   const [activeRequirement, setActiveRequirement] = useState();
   const [selectedPoorWords, setSelectedPoorWords] = useState([]);
   const [requirements, setRequirements] = useState();
+  const [timeSpent, setTimeSpent] = useState(Date.now());
+  const [result, setResult] = useState();
+  const history = useHistory();
+  const classes = useStyles();
 
   useEffect(() => {
     (async () => {
-      const response = await fetch('PoorWords/GetRequirementsForPWTask');
-      const data = await response.json();
-  
-      const responseRequirements = data.requirements.map(req => {
-        req.words = req.title.match(/[^ ,.!?:;"']\S+[^ ,.!?:;"'](?!:)*/g);
-        return req;
-      });
-  
-      setRequirements(responseRequirements);
+      if(taskId){
+        const response = await fetch(`PoorWords/GetRequirementsForPWTask/${taskId}`);
+        const data = await response.json();
+        const responseRequirements = data.requirements.map(req => {
+          req.words = req.title.match(/[^ ,.!?:;"']\S+[^ ,.!?:;"'](?!:)*/g);
+          return req;
+        });
+    
+        setRequirements(responseRequirements);
+      } else {
+        history.push('../tasks');
+      }
     })()
   }, []);
 
-  const classes = useStyles();
+  const onFinished = () => {
+    const timeDiff = Date.now() - timeSpent;
+    const seconds = (timeDiff / 1000)^0;
+    const minutes = (seconds / 60)^0;
+    const secondsRemainder = seconds - minutes * 60;
+    setTimeSpent(`${minutes.toString().padStart(2, '0')}:${secondsRemainder.toString().padStart(2, '0')}`);
+  }
 
   const viewWords = (text) => {
     setActiveRequirement(text);
@@ -265,89 +279,99 @@ export const PoorWords = () => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        requirementIDs: requirements.map(requirement => {
-          return requirement.id;
-        }), 
+        taskId: taskId,
         poorWords: selectedPoorWords
       }),
     })
+    .then(res => res.json())
+    .then(res => {
+      onFinished();
+      setResult(res);
+    })
+
   }
 
   return (
-    <>
-      <Typography className={classes.pos}>Практичне завдання з визначення poor words</Typography>
-      <Card className={classes.root}>
-        <CardContent className={classes.taskListContent}>
-          <div className={classes.flexibleCards}>
-            <div className={classes.flexibleCard}>
-              <Typography variant={'h6'} className={classes.subCardHeader}>
-                Видобуті вимоги 
-              </Typography>
-              <Card className={[classes.poorCard, classes.requirementCard].join(' ')}>
-                <CardContent className={classes.taskListContent}>
-                  <RequirementsComponent
-                    classes={classes}
-                    viewWords={viewWords}
-                    requirements={requirements}
-                  />
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className={classes.flexibleCard}>
-              <Typography variant={'h6'} className={classes.subCardHeader}>
-                Текст вимоги 
-              </Typography>
-              <Card className={classes.poorCard}>
-                <CardContent className={classes.taskListContent}>
-                    <PoorWordsField
+    result ? (
+      <Result
+        classes={classes}
+        level={result.grade}
+        levelName={result.title}
+        time={timeSpent}
+        title={null}
+      />):(
+      <>
+        <Typography className={classes.pos}>Практичне завдання з визначення poor words</Typography>
+        <Card className={classes.root}>
+          <CardContent className={classes.taskListContent}>
+            <div className={classes.flexibleCards}>
+              <div className={classes.flexibleCard}>
+                <Typography variant={'h6'} className={classes.subCardHeader}>
+                  Видобуті вимоги 
+                </Typography>
+                <Card className={[classes.poorCard, classes.requirementCard].join(' ')}>
+                  <CardContent className={classes.taskListContent}>
+                    <RequirementsComponent
                       classes={classes}
-                      activeRequirementWords={activeRequirement}
-                      addRemovePoorWord={addRemovePoorWord}
-                      selectedPoorWords={selectedPoorWords}
+                      viewWords={viewWords}
+                      requirements={requirements}
                     />
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div className={classes.flexibleCard}>
+                <Typography variant={'h6'} className={classes.subCardHeader}>
+                  Текст вимоги 
+                </Typography>
+                <Card className={classes.poorCard}>
+                  <CardContent className={classes.taskListContent}>
+                      <PoorWordsField
+                        classes={classes}
+                        activeRequirementWords={activeRequirement}
+                        addRemovePoorWord={addRemovePoorWord}
+                        selectedPoorWords={selectedPoorWords}
+                      />
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div className={classes.flexibleCard}>
+                <Typography variant={'h6'} className={classes.subCardHeader}>
+                  Poor words
+                </Typography>
+                <Card className={classes.poorCard}>
+                  <CardContent className={classes.taskListContent}>
+                    {
+                      selectedPoorWords && selectedPoorWords.length ?
+                      selectedPoorWords.map((el,i) => <div key={i}>{el}</div>) :
+                      'no poor words selected'
+                    }
+                  </CardContent>
+                </Card>
+              </div>
             </div>
 
-            <div className={classes.flexibleCard}>
-              <Typography variant={'h6'} className={classes.subCardHeader}>
-                Poor words
-              </Typography>
-              <Card className={classes.poorCard}>
-                <CardContent className={classes.taskListContent}>
-                  {
-                    selectedPoorWords && selectedPoorWords.length ?
-                    selectedPoorWords.map((el,i) => <div key={i}>{el}</div>) :
-                    'no poor words selected'
-                  }
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-
-          <Button
-            variant="contained"
-            className={classes.startTaskButton}
-            onClick={sendPoorWords}
-          > 
-            Завершити спробу
-          </Button>
-        </CardContent>
-      </Card>
-    </>
+            <Button
+              variant="contained"
+              className={classes.startTaskButton}
+              onClick={sendPoorWords}
+            > 
+              Завершити спробу
+            </Button>
+          </CardContent>
+        </Card>
+      </>
+    )
   );
 }
 
 const mapStateToProps = (state) => {
-  const { loading, error, questions, questionId, result } = state.startingTest;
-
+  const {
+    taskId,
+  } = state.taskList;
   return {
-    loading,
-    error,
-    questions,
-    questionId,
-    result,
+    taskId
   };
 };
 

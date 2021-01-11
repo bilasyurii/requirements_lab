@@ -5,6 +5,6 @@ namespace RequirementsLab.Core.Abstractions
     public interface IPoorWordsService
     {
         PoorWordsResultDTO CheckPoorWords(PoorWordsRequestDTO poorWords);
-        RequirementsForPWTaskDTO GetRequirements();
+        RequirementsForPWTaskDTO GetRequirements(int id);
     }
 }
