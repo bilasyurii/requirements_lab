@@ -12,7 +12,7 @@ import './custom.css'
 
 export default () => (
   <Layout>
-    <Route exact path='/' component={RequireAuth(Home) as any} />
+    <Route exact path='/' component={Home} />
     <Route path='/tasks' component={RequireAuth(TaskList) as any} />
     <Route path='/test' component={RequireAuth(StartingTest) as any} />
     <Route path='/requirements-task' component={RequireAuth(RequirementsTask) as any} />
