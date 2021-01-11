@@ -4,6 +4,6 @@ namespace RequirementsLab.Core.Abstractions
 {
     public interface ITaskService
     {
-        TasksListDTO GetTasks();
+        TasksListDTO GetTasks(int userId);
     }
 }
