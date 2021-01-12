@@ -66,6 +66,15 @@ namespace RequirementsLab.Services
         }
         public dynamic GetResults(int userId)
         {
+            var currentUser = context.Users
+            .Where(u => u.Id == userId)
+            .Select(u => new
+            {
+                firstName = u.Name,
+                lastName = u.Surname
+            })
+            .First();
+
             var userTasksGrouped = context.TaskResultRecords
             .Where(res => res.UserId == userId)
             .Include(taskRes => taskRes.Task)
@@ -80,7 +89,8 @@ namespace RequirementsLab.Services
                 TaskTypeName = g.First().Task.TaskType.Name,
                 Count = g.Count(),
                 MaxGrade = g.Max(item => item.Grade),
-                AvgGrade = g.Average(item => item.Grade)
+                AvgGrade = g.Average(item => item.Grade),
+                TaskTitle = g.First().Task.Title
             })
             .ToList();
 
@@ -88,6 +98,7 @@ namespace RequirementsLab.Services
             .Include(res => res.Task)
             .Where(res => res.UserId == userId)
             .Select(task => new {
+                Id = task.Task.Id,
                 TaskTitle = task.Task.Title,
                 TimeStamp = task.Time,
                 Grade = task.Grade,
@@ -118,14 +129,18 @@ namespace RequirementsLab.Services
                 {
                     TaskTypeId = key,
                     TaskTypeName = g.First().TaskTypeName,
+                    TaskName = g.First().TaskTitle,
                     GroupedTasks = g.ToList(),
                 }
             );
 
             return new {
+                CurrentUser = currentUser,
                 OverallGrade = overallGrade,
                 GroupedUserTasks = finalUserTasksGrouped,
                 AllUserTasksResults = userTasks,
+                FinishedTasksCount = finishedTasksCount,
+                OverallTasksCount = overallTasksCount,
             };
 
         }

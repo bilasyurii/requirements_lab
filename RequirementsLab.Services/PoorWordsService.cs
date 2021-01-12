@@ -56,7 +56,7 @@ namespace RequirementsLab.Services
             {
                 resultTitle = "Незадовільний результат";
             }
-            else if(grade>=50 && grade< 85)
+            else if(grade >= 33 && grade < 80)
             {
                 resultTitle = "Добрий результат";
             }

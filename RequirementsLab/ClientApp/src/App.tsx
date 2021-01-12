@@ -19,7 +19,7 @@ export default () => (
     <Route path='/test' component={RequireAuth(StartingTest) as any} />
     <Route path='/requirements-task' component={RequireAuth(RequirementsTask) as any} />
     <Route path='/authorization' component={Authorization} />
-    <Route path='/poorwords-task' component={PoorWords} />
-    <Route path='/profile' component={UserProfile} />
+    <Route path='/poorwords-task' component={RequireAuth(PoorWords)} />
+    <Route path='/profile' component={RequireAuth(UserProfile)} />
   </Layout>
 );

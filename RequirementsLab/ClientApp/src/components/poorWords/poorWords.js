@@ -33,7 +33,8 @@ const useStyles = makeStyles({
   flexibleCards: {
     display: 'flex',
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'space-around',
+    flexWrap: 'wrap',
     overflowY: 'auto',
     width: '100%',
     padding: '10px 0',
@@ -42,7 +43,8 @@ const useStyles = makeStyles({
   flexibleCard: {
     '&:not(:first-of-type)': {
       marginLeft: '16px'
-    }
+    },
+    marginBottom: '12px'
   },
   poorCard: {
     backgroundColor: '#fff',

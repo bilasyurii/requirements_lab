@@ -19,7 +19,7 @@ namespace RequirementsLab.Controllers
         }
 
         [HttpGet]
-        [Route("statistics/")]
+        [Route("profile/")]
         public dynamic GetResults()
         {
             return resultsService.GetResults(Me());
