@@ -223,17 +223,17 @@ function handleErrors(newValues) {
 
   if (!requirementText) {
     errors.requirementText = 'Це поле обов\'язкове.';
-  } else if (requirementText.length >= 200) {
+  } else if (requirementText.length > 200) {
     errors.requirementText = 'Надто довгий текст вимоги! Максимум - 200 символів.';
   }
 
   const keywordErrorText = 'Надто довге ключове слово! Максимум - 20 символів.';
 
-  if (newValues.keyword1.length >= 20) {
+  if (newValues.keyword1.length > 20) {
     errors.keyword1 = keywordErrorText;
   }
 
-  if (newValues.keyword2.length >= 20) {
+  if (newValues.keyword2.length > 20) {
     errors.keyword2 = keywordErrorText;
   }
 
