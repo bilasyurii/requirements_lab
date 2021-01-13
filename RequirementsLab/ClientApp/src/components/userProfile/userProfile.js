@@ -140,8 +140,7 @@ export const UserProfile = () => {
   const classes = useStyles();
   const [profileData, setProfileData] = useState();
   const [activeTab, setActiveTab] = useState('history');
-  const [chartType, setChartType] = useState(1); //hardcode
-
+  const [chartType, setChartType] = useState();
   
   const formatDate = (date) => {
     const dateToFormat = new Date(date);
@@ -186,7 +185,7 @@ export const UserProfile = () => {
   }
 
   const getDataForChart = (chartType, chartData) => {
-    const taskGroup = chartData.find(data => data.taskTypeId == chartType).groupedTasks;
+    const taskGroup = chartData.find(data => data.taskTypeId == chartType)?.groupedTasks || [];
     return taskGroup.map(data => {
       return {
         x: data.taskTitle,
@@ -196,7 +195,7 @@ export const UserProfile = () => {
   };
 
   const getWidthForChart = (data) => {
-    const tasks = data.find(data => data.taskTypeId == chartType).groupedTasks;
+    const tasks = data.find(data => data.taskTypeId == chartType)?.groupedTasks || 0;
     return 300 + 20 * tasks.length;
   }
   
@@ -292,7 +291,7 @@ export const UserProfile = () => {
                           <VictoryBar
                             style={{ data: { fill: "#aac" } }}
                             data={getDataForChart(chartType, profileData.groupedUserTasks)}
-                            labels={({ datum }) => `${datum.y}%`}
+                            labels={({ datum }) => `${Math.round(datum.y * 100)/100}%`}
                           />
                         </VictoryChart>
                       </div>
