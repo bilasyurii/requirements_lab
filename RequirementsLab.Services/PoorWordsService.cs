@@ -50,7 +50,16 @@ namespace RequirementsLab.Services
 
             int grade = (int)(((float)poorWordsMatched.Count / poorWordsFromDB.Count) * 100);
             int notMatchedCount = pwArray.Count - poorWordsMatched.Count;
-            grade -= grade / pwArray.Count * notMatchedCount;
+
+            if(pwArray.Count!=0)
+            {
+                grade -= grade / pwArray.Count * notMatchedCount;
+            }
+            else
+            {
+                grade = 0;
+            }
+            
             string resultTitle;
             if (grade < 33)
             {
