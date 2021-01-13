@@ -47,7 +47,7 @@ namespace RequirementsLab.Services
             {
                 diff *= task.Difficulty;
 
-                user.Level += diff * 0.1f;
+                user.Level += diff * 0.2f;
 
                 context.Entry(user).CurrentValues.SetValues(user);
             }

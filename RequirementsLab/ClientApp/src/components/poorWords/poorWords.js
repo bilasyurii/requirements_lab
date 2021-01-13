@@ -6,6 +6,8 @@ import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import { connect } from 'react-redux';
 import { Icon, IconButton } from '@material-ui/core';
+import AddIcon from '@material-ui/icons/Add';
+import RemoveIcon from '@material-ui/icons/Remove';
 import Result from '../result/Result';
 import { useHistory } from 'react-router';
 
@@ -220,8 +222,8 @@ export const Popup = ({poorWords, pwClicked, addOrRemovePw, popupCoords,classes}
     }}
     className={classes.popup}>
       {pwClicked}
-      <IconButton  onClick={() => addOrRemovePw(pwClicked)} className={classes.button}>
-        {~poorWords.findIndex(pW => pW === pwClicked) ? <Icon style={{ color: '#f00' }}>remove</Icon> : <Icon style={{ color: '#0f0' }}>add</Icon> }
+      <IconButton onClick={() => addOrRemovePw(pwClicked)} className={classes.button}>
+        {~poorWords.findIndex(pW => pW === pwClicked) ? <RemoveIcon style={{ color: '#f00' }} /> : <AddIcon style={{ color: '#0f0' }}/>}
       </IconButton>
     </div>
   )
