@@ -30,6 +30,8 @@ namespace RequirementsLab
             services.AddScoped<IRequirementsService, RequirementsService>();
             services.AddScoped<IResultsService, ResultsService>();
             services.AddScoped<IAccountService, AccountService>();
+            services.AddScoped<IPoorWordsService, PoorWordsService>();
+
 
             var connectionString = Configuration.GetConnectionString("DefaultConnection");
 
