@@ -196,7 +196,7 @@ export const PoorWordsField = ({classes, activeRequirementWords, addRemovePoorWo
           key={i}
           color={getWordColor(word)}
         />
-      ) : 'no requirement selected'}
+      ) : 'не вибрано жодної вимоги'}
       {
           isComponentVisible && 
           <Popup
@@ -241,7 +241,7 @@ export const PoorWords = ({taskId}) => {
         const response = await fetch(`PoorWords/GetRequirementsForPWTask/${taskId}`);
         const data = await response.json();
         const responseRequirements = data.requirements.map(req => {
-          req.words = req.title.match(/[^ ,.!?:;"']\S+[^ ,.!?:;"'](?!:)*/g);
+          req.words = req.title.match(/\S*[^ ,.!?:;"'\/](?!:)*/g);
           return req;
         });
     
@@ -347,7 +347,7 @@ export const PoorWords = ({taskId}) => {
                     {
                       selectedPoorWords && selectedPoorWords.length ?
                       selectedPoorWords.map((el,i) => <div key={i}>{el}</div>) :
-                      'no poor words selected'
+                      'не вибраних жодних poor words'
                     }
                   </CardContent>
                 </Card>
